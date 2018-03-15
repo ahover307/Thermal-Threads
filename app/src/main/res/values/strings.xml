@@ -3,6 +3,8 @@
     <string name="title_activity_settings">Settings</string>
     <string name ="button">Allow location access</string>
 
+    <string name="setup_title_string">Thermal Threads Setup Screen</string>
+
     <!-- Strings related to Settings -->
 
 
@@ -75,4 +77,23 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+
+    <string name="name">Name:</string>
+    <string name="default_name">John Smith</string>
+    <string name="choose_to_allow_location_question">Click button to allow access to location, or enter your zipcode</string>
+    <string name="pref_allow_location">Allow Access</string>
+    <string name="zipcode">Zipcode</string>
+    <string name="gender">Gender:</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="advance_screen">Let\'s get to it!</string>
+    <string name="tmp_overview_descrip">Quick Overview of the weather, just temperature, wind/rain. Talk about what to expect outside in real basic stuff</string>
+    <string name="fancy_cloths">Fancy</string>
+    <string name="casual_cloths">Casual</string>
+    <string name="workout_cloths">Work-out</string>
+    <string name="temp_clothing_descrip">This will talk about what to wear. its windy so bring pants</string>
+    <string name="settings_title">Settings</string>
+    <string name="specify_zipcode">Specify Zipcode</string>
+    <string name="change_name">Change Name</string>
+    <string name="pref_change_weather" >Change Weather Provider with dropdown menu</string>
 </resources>

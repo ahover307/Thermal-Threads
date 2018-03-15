@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
-        android:text="Thermal Threads setup opporttuniry"
+        android:text="@string/setup_title_string"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -20,22 +19,24 @@
         android:id="@+id/lblNamePrompt"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="8dp"
-        android:text="Name:"
-        app:layout_constraintEnd_toStartOf="@+id/txtName"
+        android:text="@string/name"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lblAppName" />
 
     <TextView
         android:id="@+id/lblZipcodePrompt"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="click button to allow access to location, or enter in Zipcode:"
+        android:text="@string/choose_to_allow_location_question"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtName" />
 
     <TextView
@@ -44,75 +45,93 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="8dp"
-        android:text="Gender:"
+        android:text="@string/gender"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtZipcode" />
-
-    <TextView
-        android:id="@+id/simpleDialog"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Simple Android Dialog Box" />
 
     <EditText
         android:id="@+id/txtName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:ems="10"
-        android:hint="John Smith"
+        android:hint="@string/default_name"
         android:inputType="textPersonName"
-        app:layout_constraintTop_toBottomOf="@+id/lblAppName"
-        tools:layout_editor_absoluteX="70dp" />
+        app:layout_constraintStart_toEndOf="@+id/lblNamePrompt"
+        app:layout_constraintTop_toBottomOf="@+id/lblAppName" />
 
     <EditText
         android:id="@+id/txtZipcode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:ems="10"
+        android:hint="@string/zipcode"
         android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/chkUseLocation"
         app:layout_constraintTop_toBottomOf="@+id/lblZipcodePrompt" />
 
-    <RadioButton
-        android:id="@+id/rdbMale"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Male"
-        app:layout_constraintTop_toBottomOf="@+id/txtZipcode"
-        tools:layout_editor_absoluteX="101dp" />
-
-    <RadioButton
-        android:id="@+id/rdbFemale"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Female"
-        app:layout_constraintTop_toBottomOf="@+id/txtZipcode"
-        tools:layout_editor_absoluteX="199dp" />
-
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btnLaunchMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/button"
-        app:layout_constraintEnd_toStartOf="@+id/txtZipcode"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="32dp"
+        android:onClick="launchNextActivity"
+        android:text="@string/advance_screen"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+    <CheckBox
+        android:id="@+id/chkUseLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/pref_allow_location"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lblZipcodePrompt" />
 
-    <Button
-        android:layout_width="match_parent"
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Show Simple Android Dialog"
-        android:layout_below="@+id/simpleDialog"
-        android:layout_marginTop="16dp"
-        android:onClick="showDialog"/>
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/lblGenderPrompt"
+        app:layout_constraintTop_toBottomOf="@+id/txtZipcode">
+
+        <RadioButton
+            android:id="@+id/rdbMale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/male"
+            app:layout_constraintStart_toEndOf="@+id/lblGenderPrompt"
+            app:layout_constraintTop_toBottomOf="@+id/txtZipcode" />
+
+        <RadioButton
+            android:id="@+id/rdbFemale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:text="@string/female"
+            app:layout_constraintStart_toEndOf="@+id/rdbMale"
+            app:layout_constraintTop_toBottomOf="@+id/txtZipcode" />
+    </RadioGroup>
 
 </android.support.constraint.ConstraintLayout>
