@@ -29,14 +29,13 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Create a custom callback for added the location permission in the check box widget.
+        //Create a custom callback for adding the location permission in the check box widget.
         CheckBox chkLocation = findViewById(R.id.chkUseLocation);
         chkLocation.setOnClickListener(
                 new View.OnClickListener()
                 {
                     public void onClick(View view)
                     {
-
                         enableLocation();
                     }
                 });
@@ -60,7 +59,6 @@ public class MainActivity extends AppCompatActivity
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_ACCESS_FINE_LOCATION);
         }
-
     }
 
     //This method is a callback from calling the permission pop up. Once they either accept or decline it the permission, this method is called.
