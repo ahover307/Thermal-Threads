@@ -5,11 +5,13 @@ package com.example.finalproject;
 //Location and permission information were pulled from the Android Dev training page
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CheckBox;
@@ -89,6 +91,35 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void onClick(final View view)
+    {
+        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        alertDialog.setTitle("Not working yet");
+        alertDialog.setMessage("This app is not configured to pull weather data yet. This is unfinished");
+        // Alert dialog button
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Continue Anyway",
+                new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        // Alert dialog action goes here
+                        // onClick button code here
+                        launchNextActivity(view);
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        // Alert dialog action goes here
+                        // onClick button code here
+                        alertDialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+    }
+
     public void launchNextActivity(View view)
     {
         Intent intent = new Intent(this, MainPage.class);
@@ -111,15 +142,18 @@ public class MainActivity extends AppCompatActivity
         //Add name
         intent.putExtra("name", txtName.getText());
 
-        if (txtZipcode.getText().toString().equals(""))
+        if (!chkLocation.isChecked())
         {
-            //We also need to add a check to see if its a 5 digit number and have it fail if its not.
-            Toast.makeText(this, "Please enter a valid zipcode", Toast.LENGTH_LONG).show();
-            return;
-        } else
-        {
-            //Add zipcode
-            intent.putExtra("zipcode", Integer.parseInt(txtZipcode.getText().toString()));
+            if (txtZipcode.getText().toString().equals(""))
+            {
+                //We also need to add a check to see if its a 5 digit number and have it fail if its not.
+                Toast.makeText(this, "Please enter a valid zipcode", Toast.LENGTH_LONG).show();
+                return;
+            } else
+            {
+                //Add zipcode
+                intent.putExtra("zipcode", Integer.parseInt(txtZipcode.getText().toString()));
+            }
         }
 
         //Add a flag if they enable location of not yet. We will see if this stays.  <--- Its staying
@@ -128,9 +162,14 @@ public class MainActivity extends AppCompatActivity
         //Add gender. True == male, false == female
         intent.putExtra("male", rdbMale.isChecked());
 
+        //Put a temporary dialog box that will tell them how they are using a non functioning version of the app. It doesnt pull weather yet, so it can't do anything yet
+
+
         //Eventually will start the new activity
         startActivity(intent);
     }
+
+
 }
 
 
