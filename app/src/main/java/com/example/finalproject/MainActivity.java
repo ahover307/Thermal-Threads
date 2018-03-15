@@ -102,8 +102,7 @@ public class MainActivity extends AppCompatActivity
                 {
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        // Alert dialog action goes here
-                        // onClick button code here
+                        // user chose to continue, move to next activity
                         launchNextActivity(view);
                     }
                 });
@@ -112,8 +111,7 @@ public class MainActivity extends AppCompatActivity
                 {
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        // Alert dialog action goes here
-                        // onClick button code here
+                        // user cancels action, pop up box is removed
                         alertDialog.dismiss();
                     }
                 });
