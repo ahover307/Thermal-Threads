@@ -158,9 +158,6 @@ public class MainActivity extends AppCompatActivity
         //Add gender. True == male, false == female
         intent.putExtra("male", rdbMale.isChecked());
 
-        //Put a temporary dialog box that will tell them how they are using a non functioning version of the app. It doesnt pull weather yet, so it can't do anything yet
-
-
         //Eventually will start the new activity
         startActivity(intent);
     }
