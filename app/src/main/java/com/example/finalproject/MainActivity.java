@@ -5,13 +5,13 @@ package com.example.finalproject;
 //Location and permission information were pulled from the Android Dev training page
 
 import android.Manifest;
-import android.content.DialogInterface;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CheckBox;
@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
 {
+    SQLiteDatabase theDB;
     private final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 1;
 
     @Override
@@ -39,6 +40,22 @@ public class MainActivity extends AppCompatActivity
                         enableLocation();
                     }
                 });
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+
+        InformationDB.getInstance(this).getWritableDatabase(new InformationDB.OnDBReadyListener()
+        {
+            @Override
+            public void onDBReady(SQLiteDatabase db)
+            {
+                theDB = db;
+            }
+        });
+
     }
 
     public void enableLocation()
@@ -89,6 +106,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /*
     public void onClick(final View view)
     {
         final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -115,51 +133,63 @@ public class MainActivity extends AppCompatActivity
                 });
         alertDialog.show();
     }
+    */
 
     public void launchNextActivity(View view)
     {
-        Intent intent = new Intent(this, MainPage.class);
-
-        //Create references to the different widgets to pull information
-        EditText txtName = findViewById(R.id.txtName);
-        CheckBox chkLocation = findViewById(R.id.chkUseLocation);
-        EditText txtZipcode = findViewById(R.id.txtZipcode);
-        RadioButton rdbMale = findViewById(R.id.rdbMale);
-
-        //Add the information to the intent for now. Will maybe replace this with the lasting database.
-        //Hopefully
-
-        //If they did not enter a name, warn them and dont let them continue
-        if (txtName.getText().toString().equals(""))
+        if (theDB == null)
         {
-            Toast.makeText(this, "Please enter a name", Toast.LENGTH_LONG).show();
-            return;
-        }
-        //Add name
-        intent.putExtra("name", txtName.getText());
-
-        if (!chkLocation.isChecked())
+            Toast.makeText(this, "Try again in a few seconds.", Toast.LENGTH_SHORT).show();
+        } else
         {
-            if (txtZipcode.getText().toString().equals(""))
+            ContentValues values = new ContentValues();
+
+            Intent intent = new Intent(this, MainPage.class);
+
+            //Create references to the different widgets to pull information
+            EditText txtName = findViewById(R.id.txtName);
+            CheckBox chkLocation = findViewById(R.id.chkUseLocation);
+            EditText txtZipcode = findViewById(R.id.txtZipcode);
+            RadioButton rdbMale = findViewById(R.id.rdbMale);
+
+            //Add the information to the intent for now. Will maybe replace this with the lasting database.
+            //Hopefully
+
+            //If they did not enter a name, warn them and dont let them continue
+            if (txtName.getText().toString().equals(""))
             {
-                //We also need to add a check to see if its a 5 digit number and have it fail if its not.
-                Toast.makeText(this, "Please enter a valid zipcode", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Please enter a name", Toast.LENGTH_LONG).show();
                 return;
-            } else
-            {
-                //Add zipcode
-                intent.putExtra("zipcode", Integer.parseInt(txtZipcode.getText().toString()));
             }
+            //Add name
+            values.put("name", txtName.getText().toString());
+
+            if (!chkLocation.isChecked())
+            {
+                if (txtZipcode.getText().toString().equals(""))
+                {
+                    //We also need to add a check to see if its a 5 digit number and have it fail if its not.
+                    Toast.makeText(this, "Please enter a valid zipcode", Toast.LENGTH_LONG).show();
+                    return;
+                } else
+                {
+                    //Add zipcode
+                    values.put("zip", Integer.parseInt(txtZipcode.getText().toString()));
+                }
+            }
+
+            //Add a flag if they enable location of not yet. We will see if this stays.  <--- Its staying
+            values.put("location_access", chkLocation.isChecked());
+
+            //Add gender. True == male, false == female
+            values.put("gender", rdbMale.isChecked());
+
+            //Commit the additions to the database
+            theDB.insert("user", null, values);
+
+            //Eventually will start the new activity
+            startActivity(intent);
         }
-
-        //Add a flag if they enable location of not yet. We will see if this stays.  <--- Its staying
-        intent.putExtra("location", chkLocation.isChecked());
-
-        //Add gender. True == male, false == female
-        intent.putExtra("male", rdbMale.isChecked());
-
-        //Eventually will start the new activity
-        startActivity(intent);
     }
 
 
