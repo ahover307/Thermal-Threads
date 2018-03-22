@@ -21,8 +21,8 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
 {
-    SQLiteDatabase theDB;
     private final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 1;
+    SQLiteDatabase theDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity
     {
         super.onResume();
 
-        InformationDB.getInstance(this).getWritableDatabase(new InformationDB.OnDBReadyListener()
+        InformationDB.getInstance(this).asyncWritableDatabase(new InformationDB.OnDBReadyListener()
         {
             @Override
             public void onDBReady(SQLiteDatabase db)
@@ -174,18 +174,24 @@ public class MainActivity extends AppCompatActivity
                 } else
                 {
                     //Add zipcode
-                    values.put("zip", Integer.parseInt(txtZipcode.getText().toString()));
+                    values.put("zip", txtZipcode.getText().toString());
                 }
             }
 
             //Add a flag if they enable location of not yet. We will see if this stays.  <--- Its staying
-            values.put("location_access", chkLocation.isChecked());
+            if (chkLocation.isChecked())
+                values.put("location_access", "true");
+            else
+                values.put("location_access", "false");
 
             //Add gender. True == male, false == female
-            values.put("gender", rdbMale.isChecked());
+            if (rdbMale.isChecked())
+                values.put("gender", "male");
+            else
+                values.put("gender", "female");
 
             //Commit the additions to the database
-            theDB.insert("user", null, values);
+            intent.putExtra("rowId", theDB.insert("user", null, values));
 
             //Eventually will start the new activity
             startActivity(intent);

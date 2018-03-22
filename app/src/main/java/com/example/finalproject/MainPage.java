@@ -1,6 +1,7 @@
 package com.example.finalproject;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -13,6 +14,9 @@ public class MainPage extends AppCompatActivity
 {
 
     SQLiteDatabase theDB;
+
+    private long rowId;
+
 
     private String name;
     private boolean locationAccess;
@@ -27,8 +31,8 @@ public class MainPage extends AppCompatActivity
 
         //Create a callback onclick for the picture that will refresh the picture maybe? Use the dialog box to confirm this.
 
-
-
+        Intent intent = getIntent();
+        rowId = intent.getLongExtra("rowId", 1);
 
         //Get location
 
@@ -42,16 +46,15 @@ public class MainPage extends AppCompatActivity
     {
         super.onResume();
 
-        InformationDB.getInstance(this).getWritableDatabase(new InformationDB.OnDBReadyListener()
+        InformationDB.getInstance(this).asyncWritableDatabase(new InformationDB.OnDBReadyListener()
         {
             @Override
             public void onDBReady(SQLiteDatabase db)
             {
                 theDB = db;
+//                refreshUserInformationFromDB();
             }
         });
-
-        refreshUserInformationFromDB();
     }
 
     public void refreshUserInformationFromDB()
@@ -63,26 +66,28 @@ public class MainPage extends AppCompatActivity
         {
             //Retrieve data from the db.
             String[] columns = {"name", "location_access", "zip", "gender"};
-            Cursor c = theDB.query("user", columns, "_id = ?", null, null, null, null);
+            String where = "_id = " + Long.toString(rowId);
+            Cursor c = theDB.query("user", columns, where, null, null, null, null);
 
-            name = c.getString(c.getColumnIndexOrThrow("name"));
+            c.moveToFirst();
 
-            int locationAccessint = c.getInt(c.getColumnIndexOrThrow("location_access"));
-            if (locationAccessint == 1)
+            name = c.getString(c.getColumnIndex("name"));
+
+            String locationAccessInt = c.getString(c.getColumnIndex("location_access"));
+            if (locationAccessInt.equals("true"))
                 locationAccess = true;
             else
                 locationAccess = false;
 
-            zip = c.getInt(c.getColumnIndexOrThrow("zip"));
+            zip = Integer.parseInt(c.getString(c.getColumnIndex("zip")));
 
-            int maleGenderint = c.getInt(c.getColumnIndexOrThrow("gender"));
-            if (maleGenderint == 1)
+            String maleGenderInt = c.getString(c.getColumnIndex("gender"));
+            if (maleGenderInt.equals("true"))
                 maleGender = true;
             else
                 maleGender = false;
         }
     }
-
 
 
     public void onAboutLaunchClick(View view)
