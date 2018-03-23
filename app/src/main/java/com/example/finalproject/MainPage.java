@@ -1,11 +1,9 @@
 package com.example.finalproject;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
@@ -52,7 +50,7 @@ public class MainPage extends AppCompatActivity
             public void onDBReady(SQLiteDatabase db)
             {
                 theDB = db;
-//                refreshUserInformationFromDB();
+                refreshUserInformationFromDB();
             }
         });
     }
@@ -74,28 +72,26 @@ public class MainPage extends AppCompatActivity
             name = c.getString(c.getColumnIndex("name"));
 
             String locationAccessInt = c.getString(c.getColumnIndex("location_access"));
-            if (locationAccessInt.equals("true"))
-                locationAccess = true;
-            else
-                locationAccess = false;
+            locationAccess = locationAccessInt.equals("true");
 
-            zip = Integer.parseInt(c.getString(c.getColumnIndex("zip")));
+            if (!locationAccess)
+                zip = Integer.parseInt(c.getString(c.getColumnIndex("zip")));
 
             String maleGenderInt = c.getString(c.getColumnIndex("gender"));
-            if (maleGenderInt.equals("true"))
-                maleGender = true;
-            else
-                maleGender = false;
+            maleGender = maleGenderInt.equals("true");
+
+            c.close();
         }
     }
 
 
     public void onAboutLaunchClick(View view)
     {
-        refreshUserInformationFromDB();
-        //startActivity(new Intent(this, Acknowledgments.class));
+//        refreshUserInformationFromDB();
+        startActivity(new Intent(this, Acknowledgments.class));
     }
 
+    /*
     public void refreshWeather(final View view)
     {
         final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -120,4 +116,5 @@ public class MainPage extends AppCompatActivity
                 });
         alertDialog.show();
     }
+    */
 }

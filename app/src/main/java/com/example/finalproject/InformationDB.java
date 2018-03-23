@@ -1,5 +1,6 @@
 package com.example.finalproject;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -7,8 +8,8 @@ import android.os.AsyncTask;
 
 public class InformationDB extends SQLiteOpenHelper
 {
-    public static final int DATABASE_VERSION = 2;
-    public static final String DATABASE_NAME = "userInformation.db";
+    private static final int DATABASE_VERSION = 2;
+    private static final String DATABASE_NAME = "userInformation.db";
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE user (" +
                     "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -18,15 +19,16 @@ public class InformationDB extends SQLiteOpenHelper
                     "gender TEXT);";
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS user";
+    @SuppressLint("StaticFieldLeak")
     private static InformationDB theDB;
-    private Context appContext;
+
     private InformationDB(Context context)
     {
         super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
-        appContext = context.getApplicationContext();
+        //Context appContext = context.getApplicationContext();
     }
 
-    public static synchronized InformationDB getInstance(Context context)
+    static synchronized InformationDB getInstance(Context context)
     {
         if (theDB == null)
         {
@@ -54,7 +56,7 @@ public class InformationDB extends SQLiteOpenHelper
         onUpgrade(db, oldVersion, newVersion);
     }
 
-    public void asyncWritableDatabase(OnDBReadyListener listener)
+    void asyncWritableDatabase(OnDBReadyListener listener)
     {
         new OpenDBAsyncTask().execute(listener);
     }

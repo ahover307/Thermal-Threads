@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity
 
     //This method is a callback from calling the permission pop up. Once they either accept or decline it the permission, this method is called.
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults)
     {
         //Request code is the code that we hard coded into the request to ask for the permission.
         //The constant. This is used so we can do something if they hit yes or no.
