@@ -97,4 +97,7 @@
     <string name="change_name">Change Name</string>
     <string name="pref_change_weather">Change Weather Provider with dropdown menu</string>
     <string name="about_intro">This app is a project by Alex Hover, and Courtney Kaminski. It\'s pretty great IMO</string>
+    <string name="activity_label_settings">Settings</string>
+    <string name="activity_label_about">About Us</string>
+    <string name="activity_label_setup">Set Up</string>
 </resources>

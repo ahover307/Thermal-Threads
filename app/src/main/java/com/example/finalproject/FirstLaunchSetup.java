@@ -1,6 +1,6 @@
 package com.example.finalproject;
 
-//    tools:context="com.example.finalproject.MainActivity"
+//    tools:context="com.example.finalproject.FirstLaunchSetup"
 
 //Location and permission information were pulled from the Android Dev training page
 
@@ -15,13 +15,15 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity
+public class FirstLaunchSetup extends AppCompatActivity
 {
     private final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 1;
     SQLiteDatabase theDB;
@@ -30,9 +32,9 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_first_launch_setup);
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
         //Create a custom callback for adding the location permission in the check box widget.
@@ -45,6 +47,14 @@ public class MainActivity extends AppCompatActivity
                         enableLocation();
                     }
                 });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity, menu);
+        return true;
     }
 
     @Override
@@ -114,7 +124,7 @@ public class MainActivity extends AppCompatActivity
     /*
     public void onClick(final View view)
     {
-        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        final AlertDialog alertDialog = new AlertDialog.Builder(FirstLaunchSetup.this).create();
         alertDialog.setTitle("Not working yet");
         alertDialog.setMessage("This app is not configured to pull weather data yet. This is unfinished");
         // Alert dialog button

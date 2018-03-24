@@ -3,6 +3,7 @@ package com.example.finalproject;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -11,6 +12,10 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -22,11 +27,9 @@ public class MainPage extends AppCompatActivity
 {
 
     SQLiteDatabase theDB;
-
+    SharedPreferences sharedPref = null;
     private long rowId;
-
     private Location location;
-
     private String name;
     private boolean locationAccess;
     private Integer zip;
@@ -41,26 +44,48 @@ public class MainPage extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
 
-        //Create a callback onclick for the picture that will refresh the picture maybe? Use the dialog box to confirm this.
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
 
         Intent intent = getIntent();
         rowId = intent.getLongExtra("rowId", 1);
 
-        //Create Location object
-        FusedLocationProviderClient mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        //Find preferences file
+//        sharedPref = getSharedPreferences("com.example.finalProject", MODE_PRIVATE);
+//        PreferenceManager.setDefaultValues((this, R.xml.advanced_preferences, false));
+        //https://stackoverflow.com/questions/7217578/check-if-application-is-on-its-first-run
+//        if (sharedPref.getBoolean("firstRun", true))
+//        {
+        startActivity(new Intent(this, FirstLaunchSetup.class));
+//            sharedPref.edit().putBoolean("firstRun", false).apply();
+//        }
+    }
 
-        //Begin searching for the location. Create callback which will then begin the search for the weather once the location is found.
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>()
-            {
-                @Override
-                public void onSuccess(Location l)
-                {
-                    //This can be null. Deal with that.
-                    location = l;
-                    findWeather();
-                }
-            });
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_page, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.menu_about:
+                startActivity(new Intent(this, Acknowledgments.class));
+                return true;
+            case R.id.menu_refresh_weather:
+                refreshWeather();
+                return true;
+            case R.id.menu_settings:
+                startActivity(new Intent(this, Settings.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected((item));
+        }
     }
 
     @Override
@@ -74,11 +99,28 @@ public class MainPage extends AppCompatActivity
             public void onDBReady(SQLiteDatabase db)
             {
                 theDB = db;
-                refreshUserInformationFromDB();
             }
         });
+
+        //Create Location object
+        FusedLocationProviderClient mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        //Begin searching for the location. Create callback which will then begin the search for the weather once the location is found.
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>()
+            {
+                @Override
+                public void onSuccess(Location l)
+                {
+                    //This can be null. Deal with that.
+                    location = l;
+//                    findWeather();
+                }
+            });
     }
 
+
+    //Pulls user stuff from database and drops it into the instance variables
     public void refreshUserInformationFromDB()
     {
         if (theDB == null)
@@ -88,7 +130,7 @@ public class MainPage extends AppCompatActivity
         {
             //Retrieve data from the db.
             String[] columns = {"name", "location_access", "zip", "gender"};
-            String where = "_id = " + Long.toString(rowId);
+            String where = "_id = " + 1;
             Cursor c = theDB.query("user", columns, where, null, null, null, null);
 
             c.moveToFirst();
@@ -108,24 +150,25 @@ public class MainPage extends AppCompatActivity
         }
     }
 
-    public void findWeather()
-    {
-        //this will find the weather. Only called after you have the location.
-        if (locationAccess)
-        {
-            if (location == null)
-            {
-                Toast.makeText(this, "Please try again. Your phone needs to have found the location already for this to work.", Toast.LENGTH_SHORT).show();
-            } else
-            {
-                //Find weather based on the precise location. We'll see how this is done. what api and shit.
-            }
-        } else //Use the provided zipcode. it will have been parsed in any entry acitivity, so it should be at least 5 digits of integers.
-        //Its on the user to make sure that its typed in correctly
-        {
-            boolean x = zip.equals(10);
-        }
-    }
+//
+//    public void findWeather()
+//    {
+//        //this will find the weather. Only called after you have the location.
+//        if (locationAccess)
+//        {
+//            if (location == null)
+//            {
+//                Toast.makeText(this, "Please try again. Your phone needs to have found the location already for this to work.", Toast.LENGTH_SHORT).show();
+//            } else
+//            {
+//                //Find weather based on the precise location. We'll see how this is done. what api and shit.
+//            }
+//        } else //Use the provided zipcode. it will have been parsed in any entry acitivity, so it should be at least 5 digits of integers.
+//        //Its on the user to make sure that its typed in correctly
+//        {
+//            boolean x = zip.equals(10);
+//        }
+//    }
 
     //Put a link to this in the action bar
     public void refreshWeather()
@@ -140,7 +183,7 @@ public class MainPage extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         //Begin searching for the location. Create callback which will then begin the search for the weather once the location is found.
-                        findWeather();
+//                        findWeather();
                     }
                 });
         alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
@@ -159,4 +202,10 @@ public class MainPage extends AppCompatActivity
         startActivity(new Intent(this, Acknowledgments.class));
     }
 
+//    @Override
+//    public void onPause()
+//    {
+//        super.onPause();
+//        theDB.close();
+//    }
 }
