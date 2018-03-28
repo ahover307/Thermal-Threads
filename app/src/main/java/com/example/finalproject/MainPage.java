@@ -26,9 +26,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 public class MainPage extends AppCompatActivity
 {
 
+    public static final int ADD_ACTIVITY_RESULT = 1;
     SQLiteDatabase theDB;
     SharedPreferences sharedPref = null;
-    private long rowId;
     private Location location;
     private String name;
     private boolean locationAccess;
@@ -47,18 +47,17 @@ public class MainPage extends AppCompatActivity
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
-        Intent intent = getIntent();
-        rowId = intent.getLongExtra("rowId", 1);
-
         //Find preferences file
 //        sharedPref = getSharedPreferences("com.example.finalProject", MODE_PRIVATE);
-//        PreferenceManager.setDefaultValues((this, R.xml.advanced_preferences, false));
-        //https://stackoverflow.com/questions/7217578/check-if-application-is-on-its-first-run
+//        PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
+//        //https://stackoverflow.com/questions/7217578/check-if-application-is-on-its-first-run
 //        if (sharedPref.getBoolean("firstRun", true))
 //        {
-        startActivity(new Intent(this, FirstLaunchSetup.class));
+//            startActivityForResult(new Intent(MainPage.this, FirstLaunchSetup.class), ADD_ACTIVITY_RESULT);
 //            sharedPref.edit().putBoolean("firstRun", false).apply();
 //        }
+
+
     }
 
     @Override
@@ -119,6 +118,21 @@ public class MainPage extends AppCompatActivity
             });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        switch (requestCode)
+        {
+            case ADD_ACTIVITY_RESULT:
+                if (resultCode == FirstLaunchSetup.RESULT_SETUP_COMPLETE)
+                {
+                    refreshUserInformationFromDB();
+                } else
+                {
+                    startActivityForResult(new Intent(MainPage.this, FirstLaunchSetup.class), ADD_ACTIVITY_RESULT);
+                }
+        }
+    }
 
     //Pulls user stuff from database and drops it into the instance variables
     public void refreshUserInformationFromDB()
@@ -150,25 +164,25 @@ public class MainPage extends AppCompatActivity
         }
     }
 
-//
-//    public void findWeather()
-//    {
-//        //this will find the weather. Only called after you have the location.
-//        if (locationAccess)
-//        {
-//            if (location == null)
-//            {
-//                Toast.makeText(this, "Please try again. Your phone needs to have found the location already for this to work.", Toast.LENGTH_SHORT).show();
-//            } else
-//            {
-//                //Find weather based on the precise location. We'll see how this is done. what api and shit.
-//            }
-//        } else //Use the provided zipcode. it will have been parsed in any entry acitivity, so it should be at least 5 digits of integers.
-//        //Its on the user to make sure that its typed in correctly
-//        {
-//            boolean x = zip.equals(10);
-//        }
-//    }
+
+    public void findWeather()
+    {
+        //this will find the weather. Only called after you have the location.
+        if (locationAccess)
+        {
+            if (location == null)
+            {
+                Toast.makeText(this, "Please try again. Your phone needs to have found the location already for this to work.", Toast.LENGTH_SHORT).show();
+            } else
+            {
+                //Find weather based on the precise location. We'll see how this is done. what api and shit.
+            }
+        } else //Use the provided zipcode. it will have been parsed in any entry acitivity, so it should be at least 5 digits of integers.
+        //Its on the user to make sure that its typed in correctly
+        {
+            boolean x = zip.equals(10);
+        }
+    }
 
     //Put a link to this in the action bar
     public void refreshWeather()
@@ -183,7 +197,7 @@ public class MainPage extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         //Begin searching for the location. Create callback which will then begin the search for the weather once the location is found.
-//                        findWeather();
+                        findWeather();
                     }
                 });
         alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",

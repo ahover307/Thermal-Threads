@@ -25,7 +25,9 @@ import android.widget.Toast;
 
 public class FirstLaunchSetup extends AppCompatActivity
 {
-    private final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 1;
+    public static final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 1;
+    public static final int RESULT_SETUP_COMPLETE = 10;
+
     SQLiteDatabase theDB;
 
     @Override
@@ -205,11 +207,9 @@ public class FirstLaunchSetup extends AppCompatActivity
             else
                 values.put("gender", "female");
 
-            //Commit the additions to the database
-            intent.putExtra("rowId", theDB.insert("user", null, values));
-
             //Eventually will start the new activity
-            startActivity(intent);
+            setResult(RESULT_SETUP_COMPLETE);
+            finish();
         }
     }
 
