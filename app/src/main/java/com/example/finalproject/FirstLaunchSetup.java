@@ -5,8 +5,7 @@ package com.example.finalproject;
 //Location and permission information were pulled from the Android Dev training page
 
 import android.Manifest;
-import android.content.ContentValues;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -27,8 +26,8 @@ public class FirstLaunchSetup extends AppCompatActivity
 {
     public static final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 1;
     public static final int RESULT_SETUP_COMPLETE = 10;
-
     SQLiteDatabase theDB;
+    private SharedPreferences sharedPref = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -49,6 +48,8 @@ public class FirstLaunchSetup extends AppCompatActivity
                         enableLocation();
                     }
                 });
+
+        sharedPref = getSharedPreferences("com.example.finalProject", MODE_PRIVATE);
     }
 
     @Override
@@ -154,66 +155,62 @@ public class FirstLaunchSetup extends AppCompatActivity
 
     public void launchNextActivity(View view)
     {
-        if (theDB == null)
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        //Create references to the different widgets to pull information
+        EditText txtName = findViewById(R.id.txtName);
+        CheckBox chkLocation = findViewById(R.id.chkUseLocation);
+        EditText txtZipcode = findViewById(R.id.txtZipcode);
+        RadioButton rdbMale = findViewById(R.id.rdbMale);
+
+
+        //If they did not enter a name, warn them and dont let them continue
+        if (txtName.getText().toString().equals(""))
         {
-            Toast.makeText(this, "Try again in a few seconds.", Toast.LENGTH_SHORT).show();
-        } else
-        {
-            ContentValues values = new ContentValues();
-
-            Intent intent = new Intent(this, MainPage.class);
-
-            //Create references to the different widgets to pull information
-            EditText txtName = findViewById(R.id.txtName);
-            CheckBox chkLocation = findViewById(R.id.chkUseLocation);
-            EditText txtZipcode = findViewById(R.id.txtZipcode);
-            RadioButton rdbMale = findViewById(R.id.rdbMale);
-
-            //Add the information to the intent for now. Will maybe replace this with the lasting database.
-            //Hopefully
-
-            //If they did not enter a name, warn them and dont let them continue
-            if (txtName.getText().toString().equals(""))
-            {
-                Toast.makeText(this, "Please enter a name", Toast.LENGTH_LONG).show();
-                return;
-            }
-            //Add name
-            values.put("name", txtName.getText().toString());
-
-            if (!chkLocation.isChecked())
-            {
-                if (txtZipcode.getText().toString().equals(""))
-                {
-                    //We also need to add a check to see if its a 5 digit number and have it fail if its not.
-                    Toast.makeText(this, "Please enter a valid zipcode", Toast.LENGTH_LONG).show();
-                    return;
-                } else
-                {
-                    //Add zipcode
-                    values.put("zip", txtZipcode.getText().toString());
-                }
-            }
-
-            //Add a flag if they enable location of not yet. We will see if this stays.  <--- Its staying
-            if (chkLocation.isChecked())
-                values.put("location_access", "true");
-            else
-                values.put("location_access", "false");
-
-            //Add gender. True == male, false == female
-            if (rdbMale.isChecked())
-                values.put("gender", "male");
-            else
-                values.put("gender", "female");
-
-            //Eventually will start the new activity
-            setResult(RESULT_SETUP_COMPLETE);
-            finish();
+            Toast.makeText(this, "Please enter a name", Toast.LENGTH_LONG).show();
+            return;
         }
+        //Add name
+        editor.putString("name", txtName.getText().toString());
+
+        //If the zipcode box is needed, check to make sure that it is 5 numbers
+        if (!chkLocation.isChecked())
+        {
+            //Ensure the zip is a 5 digit number. It will crash if its number only numbers, but thats not all bad...
+            if (txtZipcode.getText().toString().length() == 5)
+            {
+                Toast.makeText(this, "Please enter a valid zipcode", Toast.LENGTH_LONG).show();
+                return;
+            } else
+            {
+                int tempZipHolder;
+
+                try
+                {
+                    tempZipHolder = Integer.parseInt((txtZipcode.getText().toString()));
+                } catch (NumberFormatException e)
+                {
+                    Toast.makeText(this, "Only enter numbers in the zip", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //Add zipcode
+                editor.putInt("zip", tempZipHolder);
+            }
+        }
+
+        //Add a flag if they enable location of not yet. We will see if this stays.  <--- Its staying
+        editor.putBoolean("location_access", chkLocation.isChecked());
+
+
+        //Add gender. True == male, false == female
+        editor.putBoolean("male", rdbMale.isChecked());
+
+        //apply changes to settings
+        editor.apply();
+
+        //Eventually will start the new activity
+        setResult(RESULT_SETUP_COMPLETE);
+        finish();
     }
-
-
 }
-
-

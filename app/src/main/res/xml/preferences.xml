@@ -13,6 +13,7 @@
 
     <EditTextPreference
         android:dependency="location_access"
+        android:key="zip"
         android:summary="@string/pref_change_zip"
         android:title="@string/zipcode" />
 

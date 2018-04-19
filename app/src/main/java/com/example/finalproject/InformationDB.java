@@ -8,7 +8,7 @@ import android.os.AsyncTask;
 
 public class InformationDB extends SQLiteOpenHelper
 {
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "userInformation.db";
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE user (" +
