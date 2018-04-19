@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -23,8 +24,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-public class MainPage extends AppCompatActivity
-{
+public class MainPage extends AppCompatActivity {
 
     public static final int ADD_ACTIVITY_RESULT = 1;
     SQLiteDatabase theDB;
@@ -39,8 +39,7 @@ public class MainPage extends AppCompatActivity
     //Get weather based on location
     //Get information out of the weather once found. Make a callback in the once weather is found.
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
 
@@ -48,31 +47,31 @@ public class MainPage extends AppCompatActivity
         setSupportActionBar(myToolbar);
 
         //Find preferences file
-//        sharedPref = getSharedPreferences("com.example.finalProject", MODE_PRIVATE);
-//        PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
+        sharedPref = getSharedPreferences("com.example.finalProject", MODE_PRIVATE);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+
+        //Uncomment this line to set up the page for the first time.
+//        sharedPref.edit().putBoolean("firstRun", true).apply();
+
 //        //https://stackoverflow.com/questions/7217578/check-if-application-is-on-its-first-run
-//        if (sharedPref.getBoolean("firstRun", true))
-//        {
-//            startActivityForResult(new Intent(MainPage.this, FirstLaunchSetup.class), ADD_ACTIVITY_RESULT);
-//            sharedPref.edit().putBoolean("firstRun", false).apply();
-//        }
+        if (sharedPref.getBoolean("firstRun", true)) {
+            startActivityForResult(new Intent(MainPage.this, FirstLaunchSetup.class), ADD_ACTIVITY_RESULT);
+            sharedPref.edit().putBoolean("firstRun", false).apply();
+        }
 
 
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_page, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
             case R.id.menu_about:
                 startActivity(new Intent(this, Acknowledgments.class));
                 return true;
@@ -88,15 +87,12 @@ public class MainPage extends AppCompatActivity
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
 
-        InformationDB.getInstance(this).asyncWritableDatabase(new InformationDB.OnDBReadyListener()
-        {
+        InformationDB.getInstance(this).asyncWritableDatabase(new InformationDB.OnDBReadyListener() {
             @Override
-            public void onDBReady(SQLiteDatabase db)
-            {
+            public void onDBReady(SQLiteDatabase db) {
                 theDB = db;
             }
         });
@@ -106,11 +102,9 @@ public class MainPage extends AppCompatActivity
 
         //Begin searching for the location. Create callback which will then begin the search for the weather once the location is found.
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>()
-            {
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
-                public void onSuccess(Location l)
-                {
+                public void onSuccess(Location l) {
                     //This can be null. Deal with that.
                     location = l;
 //                    findWeather();
@@ -119,29 +113,22 @@ public class MainPage extends AppCompatActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        switch (requestCode)
-        {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
             case ADD_ACTIVITY_RESULT:
-                if (resultCode == FirstLaunchSetup.RESULT_SETUP_COMPLETE)
-                {
+                if (resultCode == FirstLaunchSetup.RESULT_SETUP_COMPLETE) {
                     refreshUserInformationFromDB();
-                } else
-                {
+                } else {
                     startActivityForResult(new Intent(MainPage.this, FirstLaunchSetup.class), ADD_ACTIVITY_RESULT);
                 }
         }
     }
 
     //Pulls user stuff from database and drops it into the instance variables
-    public void refreshUserInformationFromDB()
-    {
-        if (theDB == null)
-        {
+    public void refreshUserInformationFromDB() {
+        if (theDB == null) {
             Toast.makeText(this, "Try again in a few seconds.", Toast.LENGTH_SHORT).show();
-        } else
-        {
+        } else {
             //Retrieve data from the db.
             String[] columns = {"name", "location_access", "zip", "gender"};
             String where = "_id = " + 1;
@@ -165,54 +152,47 @@ public class MainPage extends AppCompatActivity
     }
 
 
-    public void findWeather()
-    {
+    public void findWeather() {
         //this will find the weather. Only called after you have the location.
-        if (locationAccess)
-        {
-            if (location == null)
-            {
+        if (locationAccess) {
+            if (location == null) {
                 Toast.makeText(this, "Please try again. Your phone needs to have found the location already for this to work.", Toast.LENGTH_SHORT).show();
-            } else
-            {
+            } else {
+                Toast.makeText(this, "The weather is shit.", Toast.LENGTH_SHORT).show();
+
                 //Find weather based on the precise location. We'll see how this is done. what api and shit.
             }
         } else //Use the provided zipcode. it will have been parsed in any entry acitivity, so it should be at least 5 digits of integers.
         //Its on the user to make sure that its typed in correctly
         {
-            boolean x = zip.equals(10);
+            Toast.makeText(this, "The weather is shit and the zip is wrong.", Toast.LENGTH_SHORT).show();
+
         }
     }
 
     //Put a link to this in the action bar
-    public void refreshWeather()
-    {
+    public void refreshWeather() {
         final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setTitle("Refresh Weather");
         alertDialog.setMessage("Would you like to refresh the weather");
         // Alert dialog button
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Continue Anyway",
-                new DialogInterface.OnClickListener()
-                {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
                         //Begin searching for the location. Create callback which will then begin the search for the weather once the location is found.
                         findWeather();
                     }
                 });
         alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
-                new DialogInterface.OnClickListener()
-                {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
                         alertDialog.dismiss();
                     }
                 });
         alertDialog.show();
     }
 
-    public void onAboutLaunchClick(View view)
-    {
+    public void onAboutLaunchClick(View view) {
         startActivity(new Intent(this, Acknowledgments.class));
     }
 

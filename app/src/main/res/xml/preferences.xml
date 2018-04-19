@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="@string/default_name"
+        android:key="name"
+        android:title="@string/change_name" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="location_access"
+        android:title="@string/pref_allow_location" />
+
+    <EditTextPreference
+        android:dependency="location_access"
+        android:summary="@string/pref_change_zip"
+        android:title="@string/zipcode" />
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="firstRun"
+        android:summary="@string/pref_firstRun_summ"
+        android:title="@string/pref_firstRun" />
+
+</PreferenceScreen>

@@ -1,8 +1,8 @@
 package com.example.finalproject;
 
 import android.os.Bundle;
+import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 
 public class Settings extends AppCompatActivity {
 
@@ -10,9 +10,15 @@ public class Settings extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+    }
 
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    public static class SettingsFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            //Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.preferences);
+        }
     }
 }
