@@ -1,43 +1,57 @@
 package com.example.finalproject;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+
 public class MainPage extends AppCompatActivity
 {
     //Weather provided by WeatherUnderground
     //API key for wunderground
-    public static final String WUNDERGROUNG_API_KEY = "7ee59bf996ed0a7f";
+    public static final String WUNDERGROUND_API_KEY = "7ee59bf996ed0a7f";
+    public static final int SETUP_ACTIVITY_RESULT = 1;
     //Forecast Example
     // http://api.wunderground.com/api/API-KEY/forecast/q/CA/ZIP-CODE.json
     // http://api.wunderground.com/api/API-KEY/forecast/q/CA/LATTIDUE, LONGITUDE.json
-
-    public static final int SETUP_ACTIVITY_RESULT = 1;
+    //Weather object that holds all the information given
+    WeatherObject weatherObject;
     private SQLiteDatabase theDB;
     private SharedPreferences sharedPref = null;
     private Location location;
 
-    //User stuff is in sharedprefs now.
+    //User stuff is in shared-prefs now.
     // sharedPref.getBoolean("location_access", false)
     // sharedPref.getString("name", "@string/default_name")
     // sharedPref.getInt("zip", 0)
@@ -68,8 +82,6 @@ public class MainPage extends AppCompatActivity
             startActivityForResult(new Intent(MainPage.this, FirstLaunchSetup.class), SETUP_ACTIVITY_RESULT);
             sharedPref.edit().putBoolean("firstRun", false).apply();
         }
-
-
     }
 
     @Override
@@ -79,11 +91,6 @@ public class MainPage extends AppCompatActivity
         inflater.inflate(R.menu.main_page, menu);
         return true;
     }
-
-    //    @Override
-    //    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    //        super.onActivityResult(requestCode, resultCode, data);
-    //    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -129,7 +136,7 @@ public class MainPage extends AppCompatActivity
                 {
                     //This can be null. Deal with that.
                     location = l;
-                    //                    findWeather();
+                    findWeather();
                 }
             });
     }
@@ -165,7 +172,7 @@ public class MainPage extends AppCompatActivity
     public void findWeather()
     {
         //this will find the weather. Only called after you have the location.
-        if (sharedPref.getBoolean("location_access", false))
+        if (sharedPref.getBoolean("location_access", true))
         {
             if (location == null)
             {
@@ -181,10 +188,10 @@ public class MainPage extends AppCompatActivity
 
                 String JSONString =
                         "http://api.wunderground.com/api/" +
-                                WUNDERGROUNG_API_KEY +
-                                "/forecast/q/CA/" +
+                                WUNDERGROUND_API_KEY +
+                                "/forecast/q/" +
                                 latitude +
-                                ", " +
+                                "," +
                                 longitude +
                                 ".json";
 
@@ -197,20 +204,121 @@ public class MainPage extends AppCompatActivity
 
             String JSONString =
                     "http://api.wunderground.com/api/" +
-                            WUNDERGROUNG_API_KEY +
-                            "/forecast/q/CA/" +
-                            Integer.toString(sharedPref.getInt("zip", 0)) +
+                            WUNDERGROUND_API_KEY +
+                            "/forecast/q/" +
+                            Integer.toString(sharedPref.getInt("zip", 1)) +
                             ".json";
             findWeatherHelper(JSONString);
         }
     }
 
     //Async method to call down the weather and parse it.
+    @SuppressLint("StaticFieldLeak")
     private void findWeatherHelper(String JSONString)
     {
         //Make async call and get json object
         //parse json object
         //Create global variables and save it there.
+        new AsyncTask<String, Void, WeatherObject>()
+        {
+            @Override
+            protected void onPostExecute(WeatherObject weatherObject)
+            {
+                super.onPostExecute(weatherObject);
+
+                MainPage.this.weatherObject = weatherObject;
+
+                ((TextView) findViewById(R.id.lblWeatherLastPulled)).setText(String.format("%s%s", getString(R.string.weather_last_pulled), weatherObject.getTimeWeatherWasPulled()));
+
+                findOutfits();
+            }
+
+            @Override
+            protected WeatherObject doInBackground(String... strings)
+            {
+                String wUndergroundURL = strings[0];
+                URL url;
+                URLConnection urlConnection;
+
+                JSONObject jsonObject;
+
+                WeatherObject weatherObject = new WeatherObject();
+                try
+                {
+                    url = new URL(wUndergroundURL);
+
+                    urlConnection = url.openConnection();
+                } catch (IOException e)
+                {
+                    Log.e("JSON Background Task", "Connection Failed to site " + e.getMessage());
+                    return null;
+                }
+
+                StringBuilder json = new StringBuilder();
+                try
+                {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+
+                    String line;
+                    while ((line = reader.readLine()) != null)
+                    {
+                        json.append(line);
+                    }
+                    reader.close();
+                } catch (Exception e)
+                {
+                    Log.e("JSON Background Task", "Error converting result " + e.toString());
+                    return null;
+                }
+
+                try
+                {
+                    jsonObject = new JSONObject(json.toString());
+                } catch (JSONException e)
+                {
+                    Log.e("JSON Background Task", "Error parsing data " + e.toString());
+                    return null;
+                }
+
+                try
+                {
+                    jsonObject = jsonObject.getJSONObject("forecast");
+
+                    //Before going into the specifics for the day, go into the forecast, and pull out the forecast text
+                    weatherObject.setForecast(jsonObject.getJSONObject("txt_forecast").getJSONArray("forecastday").getJSONObject(0).getString("fcttext"));
+
+                    jsonObject = jsonObject.getJSONObject("simpleforecast");
+                    JSONArray jsonDayArray = jsonObject.getJSONArray("forecastday");
+                    jsonObject = jsonDayArray.getJSONObject(0);
+
+                    //At this point we are in the json of today.
+                    //Pull and give it to the weatherobject
+
+                    weatherObject.setTempHigh(jsonObject.getJSONObject("high").getInt("fahrenheit"));
+                    weatherObject.setTempLow(jsonObject.getJSONObject("low").getInt("fahrenheit"));
+                    weatherObject.setHumidityAvg(jsonObject.getInt("avehumidity"));
+                    weatherObject.setTimeWeatherWasPulled(jsonObject.getJSONObject("date").getString("pretty"));
+                    weatherObject.setWindAvg(jsonObject.getJSONObject("avewind").getInt("mph"));
+                    weatherObject.setWindMax(jsonObject.getJSONObject("maxwind").getInt("mph"));
+                    weatherObject.setWeatherType(jsonObject.getString("conditions"));
+
+                } catch (JSONException e)
+                {
+                    Log.e("JSON Background Task", "Error parsing JSON: " + e.getMessage());
+                    Log.e("JSON Background Task", url.toString());
+                }
+
+                return weatherObject;
+            }
+        }.execute(JSONString);
+    }
+
+    private void findOutfits()
+    {
+        //This will run as soon as the weather was found
+        //Find your outfits here.
+
+        ((TextView) findViewById(R.id.lblWeatherIntro)).setText(weatherObject.getForecast());
     }
 
     //Put a link to this in the action bar
@@ -238,10 +346,5 @@ public class MainPage extends AppCompatActivity
                     }
                 });
         alertDialog.show();
-    }
-
-    public void onAboutLaunchClick(View view)
-    {
-        startActivity(new Intent(this, Acknowledgments.class));
     }
 }

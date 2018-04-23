@@ -9,6 +9,7 @@
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="location_access"
+        android:disableDependentsState="true"
         android:title="@string/pref_allow_location" />
 
     <EditTextPreference

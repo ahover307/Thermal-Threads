@@ -5,6 +5,7 @@ package com.example.finalproject;
 //Location and permission information were pulled from the Android Dev training page
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -56,8 +58,24 @@ public class FirstLaunchSetup extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu)
     {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_activity, menu);
+        inflater.inflate(R.menu.first_launch_setup, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.menu_about:
+                startActivity(new Intent(this, Acknowledgments.class));
+                return true;
+            case R.id.menu_settings:
+                startActivity(new Intent(this, Settings.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected((item));
+        }
     }
 
     @Override
@@ -177,7 +195,7 @@ public class FirstLaunchSetup extends AppCompatActivity
         if (!chkLocation.isChecked())
         {
             //Ensure the zip is a 5 digit number. It will crash if its number only numbers, but thats not all bad...
-            if (txtZipcode.getText().toString().length() == 5)
+            if (txtZipcode.getText().toString().length() == 4)
             {
                 Toast.makeText(this, "Please enter a valid zipcode", Toast.LENGTH_LONG).show();
                 return;
