@@ -2,10 +2,12 @@ package com.example.finalproject;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -19,6 +21,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,7 +78,7 @@ public class MainPage extends AppCompatActivity
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
 
         //Uncomment this line to set up the page for the first time.
-        //        sharedPref.edit().putBoolean("firstRun", true).apply();
+//        sharedPref.edit().putBoolean("firstRun", true).apply();
 
         //        //https://stackoverflow.com/questions/7217578/check-if-application-is-on-its-first-run
         if (sharedPref.getBoolean("firstRun", true))
@@ -82,6 +86,8 @@ public class MainPage extends AppCompatActivity
             startActivityForResult(new Intent(MainPage.this, FirstLaunchSetup.class), SETUP_ACTIVITY_RESULT);
             sharedPref.edit().putBoolean("firstRun", false).apply();
         }
+
+
     }
 
     @Override
@@ -122,6 +128,7 @@ public class MainPage extends AppCompatActivity
             public void onDBReady(SQLiteDatabase db)
             {
                 theDB = db;
+                refreshWeatherFromDatabase();
             }
         });
 
@@ -139,35 +146,29 @@ public class MainPage extends AppCompatActivity
                     findWeather();
                 }
             });
+        else
+            findWeather();
     }
 
-    //    //Pulls user stuff from database and drops it into the instance variables
-    //    public void refreshUserInformationFromDB() {
-    //        if (theDB == null) {
-    //            Toast.makeText(this, "Try again in a few seconds.", Toast.LENGTH_SHORT).show();
-    //        } else {
-    //            //Retrieve data from the db.
-    //            String[] columns = {"name", "location_access", "zip", "gender"};
-    //            String where = "_id = " + 1;
-    //            Cursor c = theDB.query("user", columns, where, null, null, null, null);
-    //
-    //            c.moveToFirst();
-    //
-    //            name = c.getString(c.getColumnIndex("name"));
-    //
-    //            String locationAccessInt = c.getString(c.getColumnIndex("location_access"));
-    //            locationAccess = locationAccessInt.equals("true");
-    //
-    //            if (!locationAccess)
-    //                zip = Integer.parseInt(c.getString(c.getColumnIndex("zip")));
-    //
-    //            String maleGenderInt = c.getString(c.getColumnIndex("gender"));
-    //            maleGender = maleGenderInt.equals("true");
-    //
-    //            c.close();
-    //        }
-    //    }
+    private void refreshWeatherFromDatabase()
+    {
+        if (theDB == null)
+        {
+            Toast.makeText(this, "Try again in a few seconds.", Toast.LENGTH_SHORT).show();
+        } else
+        {
+            //Retrieve data from the db.
+            String[] columns = {"weather"};
+            String where = "_id = (SELECT MAX(_id) FROM weather)";
+            Cursor c = theDB.query("weather", columns, where, null, null, null, null);
 
+            c.moveToFirst();
+
+            ((TextView) findViewById(R.id.lblOldWeather)).setText(c.getString(c.getColumnIndex("weather")));
+
+            c.close();
+        }
+    }
 
     public void findWeather()
     {
@@ -179,8 +180,6 @@ public class MainPage extends AppCompatActivity
                 Toast.makeText(this, "Please enter in your zip. We can't find your location automatically", Toast.LENGTH_SHORT).show();
             } else
             {
-                Toast.makeText(this, "The weather is shit.", Toast.LENGTH_SHORT).show();
-
                 //Find weather based on the precise location. We'll see how this is done. what api and shit.
 
                 String latitude = Double.toString(location.getLatitude());
@@ -200,8 +199,6 @@ public class MainPage extends AppCompatActivity
         } else //Use the provided zipcode. it will have been parsed in any entry acitivity, so it should be at least 5 digits of integers.
         //Its on the user to make sure that its typed in correctly
         {
-            Toast.makeText(this, "The weather is shit and the zip is here.", Toast.LENGTH_SHORT).show();
-
             String JSONString =
                     "http://api.wunderground.com/api/" +
                             WUNDERGROUND_API_KEY +
@@ -292,7 +289,7 @@ public class MainPage extends AppCompatActivity
                     jsonObject = jsonDayArray.getJSONObject(0);
 
                     //At this point we are in the json of today.
-                    //Pull and give it to the weatherobject
+                    //Pull and give it to the weatherObject
 
                     weatherObject.setTempHigh(jsonObject.getJSONObject("high").getInt("fahrenheit"));
                     weatherObject.setTempLow(jsonObject.getJSONObject("low").getInt("fahrenheit"));
@@ -308,17 +305,291 @@ public class MainPage extends AppCompatActivity
                     Log.e("JSON Background Task", url.toString());
                 }
 
+                //Put the weather into the database
+                ContentValues values = new ContentValues();
+                values.put("weather", weatherObject.getForecast());
+
+                theDB.insert("weather", null, values);
+
                 return weatherObject;
             }
         }.execute(JSONString);
     }
 
+    public void findOutfits(View view)
+    {
+        findOutfits();
+    }
+
     private void findOutfits()
     {
+        ((TextView) findViewById(R.id.lblWeatherIntro)).setText(weatherObject.getForecast());
+        RadioButton outfitSetWork = findViewById(R.id.rdbWork);
+        TextView labelClothes = findViewById(R.id.lblClothes);
+
+
+        if (sharedPref.getBoolean("male", true))
+        {
+            if (weatherObject.getTempHigh() < 45)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.mwork1);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.mcasual1);
+                    }
+                } else // precipitation
+                {
+                    //work
+                    if (outfitSetWork.isChecked())
+                    {
+                        labelClothes.setText(R.string.mwork2);
+                    }
+                    //casual
+                    else
+                    {
+                        labelClothes.setText(R.string.mcasual2);
+                    }
+                }
+            }
+            if (weatherObject.getTempHigh() < 60)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.mwork3);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.mcasual3);
+                    }
+                } else // precipitation
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.mwork4);
+                    } else
+                    //casual
+                    {
+                        labelClothes.setText(R.string.mcasual4);
+                    }
+                }
+
+            }
+            if (weatherObject.getTempHigh() < 70)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+
+                        //work
+                        labelClothes.setText(R.string.mwork5);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.mcasual5);
+                    }
+                } else // precipitation
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.mwork6);
+                    } else
+                    //casual
+                    {
+                        labelClothes.setText(R.string.mcasual6);
+                    }
+                }
+
+            }
+
+            if (weatherObject.getTempHigh() > 70)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+
+                        //work
+                        labelClothes.setText(R.string.mwork7);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.mcasual7);
+                    }
+                } else // precipitation
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.mwork8);
+                    } else
+                    //casual
+                    {
+                        labelClothes.setText(R.string.mcasual8);
+                    }
+                }
+
+            }
+        } else
+        // female options
+        {
+            if (weatherObject.getTempHigh() < 45)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.fwork1);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.fcasual1);
+                    }
+                } else // precipitation
+                {
+                    //work
+                    if (outfitSetWork.isChecked())
+                    {
+                        labelClothes.setText(R.string.fwork2);
+                    }
+                    //casual
+                    else
+                    {
+                        labelClothes.setText(R.string.fcasual2);
+                    }
+                }
+            }
+            if (weatherObject.getTempHigh() < 60)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.fwork3);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.fcasual3);
+                    }
+                } else // precipitation
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.fwork4);
+                    } else
+                    //casual
+                    {
+                        labelClothes.setText(R.string.fcasual4);
+                    }
+                }
+
+            }
+            if (weatherObject.getTempHigh() < 70)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+
+                        //work
+                        labelClothes.setText(R.string.fwork5);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.fcasual5);
+                    }
+                } else // precipitation
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.fwork6);
+                    } else
+                    //casual
+                    {
+                        labelClothes.setText(R.string.fcasual6);
+                    }
+                }
+
+            }
+
+            if (weatherObject.getTempHigh() > 70)
+            {
+                if (weatherObject.getWeatherType().equals("Overcast") ||
+                        weatherObject.getWeatherType().equals("Clear") ||
+                        weatherObject.getWeatherType().equals("Scattered Clouds") ||
+                        weatherObject.getWeatherType().equals("Partly Cloudy") ||
+                        weatherObject.getWeatherType().equals("Mostly Cloudy"))
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.fwork7);
+                    } else
+                    {
+                        //casual
+                        labelClothes.setText(R.string.fcasual7);
+                    }
+                } else // precipitation
+                {
+                    if (outfitSetWork.isChecked())
+                    {
+                        //work
+                        labelClothes.setText(R.string.fwork8);
+                    } else
+                    //casual
+                    {
+                        labelClothes.setText(R.string.fcasual8);
+                    }
+                }
+
+            }
+
+        }
         //This will run as soon as the weather was found
         //Find your outfits here.
-
-        ((TextView) findViewById(R.id.lblWeatherIntro)).setText(weatherObject.getForecast());
     }
 
     //Put a link to this in the action bar
@@ -334,6 +605,7 @@ public class MainPage extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which)
                     {
                         //Begin searching for the location. Create callback which will then begin the search for the weather once the location is found.
+                        refreshWeatherFromDatabase();
                         findWeather();
                     }
                 });
