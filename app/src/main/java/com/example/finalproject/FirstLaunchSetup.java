@@ -52,6 +52,8 @@ public class FirstLaunchSetup extends AppCompatActivity
                 });
 
         sharedPref = getSharedPreferences("com.example.finalProject", MODE_PRIVATE);
+
+
     }
 
     @Override

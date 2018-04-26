@@ -75,10 +75,10 @@ public class MainPage extends AppCompatActivity
 
         //Find preferences file
         sharedPref = getSharedPreferences("com.example.finalProject", MODE_PRIVATE);
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         //Uncomment this line to set up the page for the first time.
-//        sharedPref.edit().putBoolean("firstRun", true).apply();
+        //        sharedPref.edit().putBoolean("firstRun", true).apply();
 
         //        //https://stackoverflow.com/questions/7217578/check-if-application-is-on-its-first-run
         if (sharedPref.getBoolean("firstRun", true))
