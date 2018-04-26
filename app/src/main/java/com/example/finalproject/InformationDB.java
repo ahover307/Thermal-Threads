@@ -8,19 +8,18 @@ import android.os.AsyncTask;
 
 public class InformationDB extends SQLiteOpenHelper
 {
-    private static final int DATABASE_VERSION = 3;
-    private static final String DATABASE_NAME = "userInformation.db";
+    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "weather.db";
     private static final String SQL_CREATE_ENTRIES =
-            "CREATE TABLE user (" +
+            "CREATE TABLE weather (" +
                     "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "name TEXT, " +
-                    "zip TEXT, " +
-                    "location_access TEXT, " +
-                    "gender TEXT);";
+                    "weather TEXT);";
     private static final String SQL_DELETE_ENTRIES =
-            "DROP TABLE IF EXISTS user";
+            "DROP TABLE IF EXISTS weather";
+
     @SuppressLint("StaticFieldLeak")
     private static InformationDB theDB;
+    private String CREATE_INITIAL_WEATHER = "INSERT INTO weather(weather) VALUES (\"NOT YET PULLED\")";
 
     private InformationDB(Context context)
     {
@@ -41,6 +40,7 @@ public class InformationDB extends SQLiteOpenHelper
     public void onCreate(SQLiteDatabase db)
     {
         db.execSQL(SQL_CREATE_ENTRIES);
+        db.execSQL(CREATE_INITIAL_WEATHER);
     }
 
     @Override
